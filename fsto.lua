@@ -45,6 +45,34 @@ function query_folder(url, id, folder_id)
     end
 end
 
+function quality_sort(medias)
+    local res = {}
+    local temp = {}
+
+    for _,media in ipairs(medias) do
+        local quality_key
+        if not media.video_quality then        
+            quality_key = "nil"
+        else
+            quality_key = media.video_quality
+        end 
+        
+        if not temp[quality_key] then
+            temp[quality_key] = {}
+        end
+
+        table.insert(temp[quality_key], media)
+    end
+
+    for _,quality in pairs(temp) do
+        for _,media in ipairs(quality) do
+            table.insert(res, media)
+        end
+    end
+    
+   return res 
+end
+
 function parse_folders(result)
     local res_obj = {}
     if not result then return nil end
@@ -64,6 +92,7 @@ end
 
 function parse_medias(result)
     local res_obj = {}
+
     if not result then return nil end
     local media_blocks = find_many(result, "<li class=\"b--file--new[^<]->(.-)</li>")
     for _,v in ipairs(media_blocks) do
@@ -105,7 +134,7 @@ function recursive_parse(folder_id, level)
     if not folder_id or level <= 0 then return nil end
     local page = query_folder(video_url, video_id, folder_id)
     local folders = parse_folders(page)
-    local medias = parse_medias(page)
+    local medias = quality_sort(parse_medias(page))
     vlc.msg.info("end medias")
     for _,folder in ipairs(folders) do
         vlc.msg.info("begin folders")
