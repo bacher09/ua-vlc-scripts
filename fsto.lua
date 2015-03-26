@@ -17,6 +17,14 @@ function get_canonical()
     end
 end
 
+function strip_tags(text)
+    return string.gsub(text, "<[^>]+/?>", "")
+end
+
+function trim(s)
+    return s:match "^%s*(.-)%s*$"
+end
+
 function find_many(data, pattern)
     local res = {}
     local i = 0
@@ -45,10 +53,7 @@ function parse_folders(result)
         folder_obj = {}
         folder_id, folder_name = string.match(v, "<a href=\"#\".-rel=\"{parent_id: '?([0-9]*)'?.-}\">(.-)</a>")
         if folder_id and folder_name then
-            clean_name = string.match(folder_name, "<b>(.-)</b>")
-            if clean_name then
-                folder_name = clean_name
-            end
+            folder_name = trim(strip_tags(folder_name))
         end
         folder_obj.id = folder_id
         folder_obj.name = folder_name
@@ -85,9 +90,10 @@ function update_medias(medias, new_medias, folder)
     vlc.msg.info("function update_medias")
     for _,v in ipairs(new_medias) do
         vlc.msg.info("begin update loop")
-        if not v.folder then
+        if not v.folders then
             v.folders = {}
         end
+        vlc.msg.info("Add folder " .. folder.name)
         table.insert(v.folders, folder)
         table.insert(medias, v)
         vlc.msg.info("end update loop")
@@ -101,25 +107,15 @@ function recursive_parse(folder_id, level)
     local folders = parse_folders(page)
     local medias = parse_medias(page)
     vlc.msg.info("end medias")
-    for _,v in ipairs(folders) do
+    for _,folder in ipairs(folders) do
         vlc.msg.info("begin folders")
-        vlc.msg.info(v.id)
-        vlc.msg.info(v.name)
-        local new_medias = recursive_parse(v.id, level - 1)
+        vlc.msg.info(folder.id)
+        vlc.msg.info(folder.name)
+        local new_medias = recursive_parse(folder.id, level - 1)
         update_medias(medias, new_medias, folder)
     end
     return medias
 end
-
-function print_medias(medias)
-    for _,v in ipairs(medias) do
-        if v.url then vlc.msg.info("url: " .. v.url) end
-        if v.filename then  vlc.msg.info("filename: " .. v.filename) end
-        if v.video_quality then vlc.msg.info("quality: " .. v.video_quality) end
-        if v.series then vlc.msg.info("series: " .. v.series) end
-    end
-end
-
 
 -- Probe function.
 function probe()
@@ -138,15 +134,26 @@ function parse()
     video_id = get_id(video_url)
     local medias = recursive_parse("0", 10)
     vlc.msg.info("end")
-    print_medias(medias)
     local playlist = {}
     for _,v in ipairs(medias) do
         local item = {}
+        local title;
+        title = v.filename
         item.path = v.url
         item.name = v.filename
-        if v.series and v.filename then
-            item.title = string.format("(%s) %s", v.series, v.filename)
+        if v.video_quality and v.series and v.filename then
+            title = string.format("(%s) [%s] %s", v.series, v.video_quality, v.filename)
+        elseif v.video_quality and v.filename then
+            title = string.format("[%s] %s", v.video_quality, v.filename)
+        elseif v.series and v.filename then
+            title = string.format("(%s) %s", v.series, v.filename)
         end
+        if v.folders then
+            for _,folder in ipairs(v.folders) do
+                title = folder.name.."/"..title
+            end
+        end
+        item.title = title
         table.insert(playlist, item)
     end
     return playlist
