@@ -41,7 +41,7 @@ function parse_folders(result)
     local res_obj = {}
     if not result then return nil end
     local folder_blocks = find_many(result, "<li class=\"folder[^<]->(.-)</li>")
-    for k,v in pairs(folder_blocks) do
+    for _,v in ipairs(folder_blocks) do
         folder_obj = {}
         folder_id, folder_name = string.match(v, "<a href=\"#\".-rel=\"{parent_id: '?([0-9]*)'?.-}\">(.-)</a>")
         if folder_id and folder_name then
@@ -61,7 +61,7 @@ function parse_medias(result)
     local res_obj = {}
     if not result then return nil end
     local media_blocks = find_many(result, "<li class=\"b--file--new[^<]->(.-)</li>")
-    for k,v in pairs(media_blocks) do
+    for _,v in ipairs(media_blocks) do
         vlc.msg.info("begin media")
         local media = {}
         _,_,video_quality = string.find(v, "<span class=\"video--qulaity.-\">([^<]+)</span>")
@@ -71,7 +71,9 @@ function parse_medias(result)
         media.video_quality = video_quality
         media.filename = filename
         media.series = series
-        media.url = "http://fs.to" .. file_url
+        if file_url then
+            media.url = "http://fs.to" .. vlc.strings.resolve_xml_special_chars(file_url)
+        end
         table.insert(res_obj, media)
         vlc.msg.info("end media")
     end
@@ -81,7 +83,7 @@ end
 
 function update_medias(medias, new_medias, folder)
     vlc.msg.info("function update_medias")
-    for k,v in pairs(new_medias) do
+    for _,v in ipairs(new_medias) do
         vlc.msg.info("begin update loop")
         if not v.folder then
             v.folders = {}
@@ -99,7 +101,7 @@ function recursive_parse(folder_id, level)
     local folders = parse_folders(page)
     local medias = parse_medias(page)
     vlc.msg.info("end medias")
-    for k,v in pairs(folders) do
+    for _,v in ipairs(folders) do
         vlc.msg.info("begin folders")
         vlc.msg.info(v.id)
         vlc.msg.info(v.name)
@@ -110,7 +112,7 @@ function recursive_parse(folder_id, level)
 end
 
 function print_medias(medias)
-    for k,v in pairs(medias) do
+    for _,v in ipairs(medias) do
         if v.url then vlc.msg.info("url: " .. v.url) end
         if v.filename then  vlc.msg.info("filename: " .. v.filename) end
         if v.video_quality then vlc.msg.info("quality: " .. v.video_quality) end
@@ -138,9 +140,13 @@ function parse()
     vlc.msg.info("end")
     print_medias(medias)
     local playlist = {}
-    for k,v in pairs(medias) do
+    for _,v in ipairs(medias) do
         local item = {}
         item.path = v.url
+        item.name = v.filename
+        if v.series and v.filename then
+            item.title = string.format("(%s) %s", v.series, v.filename)
+        end
         table.insert(playlist, item)
     end
     return playlist
