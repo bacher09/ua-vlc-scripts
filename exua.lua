@@ -14,7 +14,7 @@ function vlc_format(filename)
     local lname = string.lower(filename)
 
     for _,v in ipairs(formats) do
-        if string_ends(lname, v) then return true end
+        if string_ends(lname, "." .. v) then return true end
     end
     return false
 end
