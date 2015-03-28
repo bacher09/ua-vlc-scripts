@@ -1,6 +1,6 @@
 
 function get_id (url)
-    return string.match(url, "/([^-/]+)[%w-]+\.html")
+    return string.match(url, "/([^-/]+)[%w-]+%.html")
 end
 
 function get_canonical()
