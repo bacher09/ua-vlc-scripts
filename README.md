@@ -20,6 +20,11 @@ ua-vlc-scripts
 * Пользователям Mac OS X: `/Applications/VLC.app/Contents/MacOS/share/lua/playlist/`
 
 
+Пользователи Linux и OS X также могут воспользоваться скриптом автоматической
+установки. Для этого просто исполните в командной строке такую команду:
+    
+    curl -L https://git.io/juKf | sh
+
 Использование
 -------------
 
