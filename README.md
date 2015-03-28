@@ -29,9 +29,24 @@ ua-vlc-scripts
 
 ![Screenshot][screenshot]
 
+Настройка
+---------
+
+Если вы начнёте проигрывать видео через http и поставите его на паузу на долгое
+время, то можете наблюдать как после востановления проигрывания оно начинает
+играть с начала. Для того что-бы это исправить необходимо поставить одну опцию 
+в настройках. Нажмите <kbd>Ctrl</kbd>+<kbd>P</kbd> (<kbd>⌘</kbd>+<kbd>,</kbd>
+в OS X) что-бы войти в настройки. Выберите продвинутые настройки. Дальше
+перейдите в меню `Модули ввода` -> `HTTP(S)` и включите опцию
+`Автоматически востанавливать соединение`.
+
+![Опция][option_osx]
+![Опция][option]
 
 Лицензия
 --------
 GPLv2
 
 [screenshot]: https://raw.githubusercontent.com/bacher09/ua-vlc-scripts/master/screenshots/screenshot.png
+[option]: https://raw.githubusercontent.com/bacher09/ua-vlc-scripts/master/screenshots/option.png
+[option_osx]: https://raw.githubusercontent.com/bacher09/ua-vlc-scripts/master/screenshots/option_osx.png
