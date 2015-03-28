@@ -3,6 +3,7 @@ function get_id (url)
     return string.match(url, "/([^-/]+)[%w-]+%.html")
 end
 
+
 function get_canonical()
     local url
     local line
@@ -17,13 +18,16 @@ function get_canonical()
     end
 end
 
+
 function strip_tags(text)
     return string.gsub(text, "<[^>]+/?>", "")
 end
 
+
 function trim(s)
     return s:match "^%s*(.-)%s*$"
 end
+
 
 function find_many(data, pattern)
     local res = {}
@@ -36,6 +40,7 @@ function find_many(data, pattern)
     return res
 end
 
+
 function query_folder(url, id, folder_id)
     local sd = vlc.stream(url.."?ajax&id="..id.."&folder="..folder_id)
     if not sd then
@@ -44,6 +49,7 @@ function query_folder(url, id, folder_id)
         return sd:read(65535)
     end
 end
+
 
 function quality_sort(medias)
     local res = {}
@@ -73,13 +79,18 @@ function quality_sort(medias)
    return res 
 end
 
+
 function parse_folders(result)
     local res_obj = {}
     if not result then return nil end
-    local folder_blocks = find_many(result, "<li class=\"folder[^<]->(.-)</li>")
+    local folder_blocks = find_many(result,
+        "<li%s+class=\"folder[^<]->(.-)</li>")
+
     for _,v in ipairs(folder_blocks) do
         folder_obj = {}
-        folder_id, folder_name = string.match(v, "<a href=\"#\".-rel=\"{parent_id: '?([0-9]*)'?.-}\">(.-)</a>")
+        folder_id, folder_name = string.match(v,
+            "<a%s+href=\"#\".-rel=\"{parent_id:%s+'?([0-9]*)'?.-}\">(.-)</a>")
+
         if folder_id and folder_name then
             folder_name = trim(strip_tags(folder_name))
         end
@@ -90,23 +101,34 @@ function parse_folders(result)
     return res_obj
 end
 
+
 function parse_medias(result)
     local res_obj = {}
 
     if not result then return nil end
-    local media_blocks = find_many(result, "<li class=\"b--file--new[^<]->(.-)</li>")
+    local media_blocks = find_many(result,
+        "<li[^>]+class=\"b--file--new[^<]->(.-)</li>")
+
     for _,v in ipairs(media_blocks) do
         vlc.msg.info("begin media")
         local media = {}
-        _,_,video_quality = string.find(v, "<span class=\"video--qulaity.-\">([^<]+)</span>")
-        _,_,filename = string.find(v, "<span[^>]*class=\".-filename--text\"[^>]*>([^<]+)</span>")
-         _,_,series = string.find(v, "<span[^>]*class=\".-filename--series--num\"[^>]*>([^<]+)</span>")
-        _,_,file_url = string.find(v, "<a.-href=\"(/get/.-)\"")
+        _,_,video_quality = string.find(v,
+            "<span[^>]+class=\"video--qulaity.-\">([^<]+)</span>")
+
+        _,_,filename = string.find(v,
+            "<span[^>]+class=\".-filename--text\"[^>]*>([^<]+)</span>")
+
+         _,_,series = string.find(v,
+            "<span[^>]+class=\".-filename--series--num\"[^>]*>([^<]+)</span>")
+
+        _,_,file_url = string.find(v,
+            "<a.-href=\"(/get/.-)\"")
         media.video_quality = video_quality
         media.filename = filename
         media.series = series
         if file_url then
-            media.url = "http://fs.to" .. vlc.strings.resolve_xml_special_chars(file_url)
+            media.url = "http://fs.to" ..
+                        vlc.strings.resolve_xml_special_chars(file_url)
         end
         table.insert(res_obj, media)
         vlc.msg.info("end media")
@@ -146,6 +168,7 @@ function recursive_parse(folder_id, level)
     return medias
 end
 
+
 -- Probe function.
 function probe()
     -- fs.to support only http
@@ -171,7 +194,8 @@ function parse()
         item.path = v.url
         item.name = v.filename
         if v.video_quality and v.series and v.filename then
-            title = string.format("(%s) [%s] %s", v.series, v.video_quality, v.filename)
+            title = string.
+                format("(%s) [%s] %s", v.series, v.video_quality, v.filename)
         elseif v.video_quality and v.filename then
             title = string.format("[%s] %s", v.video_quality, v.filename)
         elseif v.series and v.filename then
