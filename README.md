@@ -18,3 +18,20 @@ ua-vlc-scripts
 `~/.local/share/vlc/lua/playlist/`
 
 * Пользователям Mac OS X: `/Applications/VLC.app/Contents/MacOS/share/lua/playlist/`
+
+
+Использование
+-------------
+
+Откройте страницу с конетом на fs.to либо ex.ua в браузере. Скопируйте ссылку
+и перейдите в vlc. Нажмите <kbd>Ctrl</kbd>+<kbd>N</kbd>
+(в OS X <kbd>⌘</kbd>+<kbd>N</kbd>) и вставьте ссылку в меню, нажмине `Ok`.
+
+![Screenshot][screenshot]
+
+
+Лицензия
+--------
+GPLv2
+
+[screenshot]: https://raw.githubusercontent.com/bacher09/ua-vlc-scripts/master/screenshots/screenshot.png
